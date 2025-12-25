@@ -62,12 +62,24 @@ const (
 	SenderTypeSandbox SenderType = "sandbox"
 )
 
+// MessageType represents the type of message for compliance.
+type MessageType string
+
+const (
+	// MessageTypeMarketing is for promotional content (subject to quiet hours).
+	MessageTypeMarketing MessageType = "marketing"
+	// MessageTypeTransactional is for OTPs/confirmations (bypasses quiet hours).
+	MessageTypeTransactional MessageType = "transactional"
+)
+
 // SendMessageRequest is the request to send a message.
 type SendMessageRequest struct {
 	// To is the recipient phone number in E.164 format (required).
 	To string `json:"to"`
 	// Text is the message content (required).
 	Text string `json:"text"`
+	// MessageType is the message type for compliance: "marketing" (default) or "transactional".
+	MessageType MessageType `json:"messageType,omitempty"`
 }
 
 // SendMessageResponse is the response from sending a message.
@@ -154,6 +166,8 @@ type ScheduleMessageRequest struct {
 	ScheduledAt string `json:"scheduledAt"`
 	// From is the sender ID or phone number (optional).
 	From string `json:"from,omitempty"`
+	// MessageType is the message type for compliance: "marketing" (default) or "transactional".
+	MessageType MessageType `json:"messageType,omitempty"`
 }
 
 // ListScheduledMessagesRequest is the request to list scheduled messages.
@@ -198,6 +212,8 @@ type SendBatchRequest struct {
 	Messages []BatchMessageItem `json:"messages"`
 	// From is the sender ID or phone number (optional, applies to all).
 	From string `json:"from,omitempty"`
+	// MessageType is the message type for compliance: "marketing" (default) or "transactional".
+	MessageType MessageType `json:"messageType,omitempty"`
 }
 
 // BatchStatus represents the status of a batch.
