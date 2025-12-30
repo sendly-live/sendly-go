@@ -85,13 +85,21 @@ client := sendly.NewClient("sk_live_v1_xxx",
 ### Send an SMS
 
 ```go
+// Marketing message (default)
 message, err := client.Messages.Send(ctx, &sendly.SendMessageRequest{
     To:   "+15551234567",
-    Text: "Hello from Sendly!",
+    Text: "Check out our new features!",
 })
 if err != nil {
     log.Fatal(err)
 }
+
+// Transactional message (bypasses quiet hours)
+message, err := client.Messages.Send(ctx, &sendly.SendMessageRequest{
+    To:          "+15551234567",
+    Text:        "Your verification code is: 123456",
+    MessageType: "transactional",
+})
 
 fmt.Printf("ID: %s\n", message.ID)
 fmt.Printf("Status: %s\n", message.Status)
@@ -183,11 +191,12 @@ Use test API keys (`sk_test_v1_xxx`) with these test numbers:
 
 | Number | Behavior |
 |--------|----------|
-| +15550001234 | Success |
-| +15550001001 | Invalid number |
-| +15550001002 | Carrier rejected |
-| +15550001003 | No credits |
-| +15550001004 | Rate limited |
+| +15005550000 | Success (instant) |
+| +15005550001 | Fails: invalid_number |
+| +15005550002 | Fails: unroutable_destination |
+| +15005550003 | Fails: queue_full |
+| +15005550004 | Fails: rate_limit_exceeded |
+| +15005550006 | Fails: carrier_violation |
 
 ## Requirements
 
