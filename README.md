@@ -137,6 +137,122 @@ fmt.Printf("Text: %s\n", message.Text)
 fmt.Printf("Status: %s\n", message.Status)
 ```
 
+### Scheduling Messages
+
+```go
+// Schedule a message for future delivery
+scheduled, err := client.Messages.Schedule(ctx, &sendly.ScheduleMessageRequest{
+    To:          "+15551234567",
+    Text:        "Your appointment is tomorrow!",
+    ScheduledAt: "2025-01-15T10:00:00Z",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Scheduled: %s\n", scheduled.ID)
+fmt.Printf("Will send at: %s\n", scheduled.ScheduledAt)
+
+// List scheduled messages
+resp, err := client.Messages.ListScheduled(ctx, nil)
+for _, msg := range resp.Data {
+    fmt.Printf("%s: %s\n", msg.ID, msg.ScheduledAt)
+}
+
+// Get a specific scheduled message
+msg, err := client.Messages.GetScheduled(ctx, "sched_xxx")
+
+// Cancel a scheduled message (refunds credits)
+result, err := client.Messages.CancelScheduled(ctx, "sched_xxx")
+fmt.Printf("Refunded: %d credits\n", result.CreditsRefunded)
+```
+
+### Batch Messages
+
+```go
+// Send multiple messages in one API call (up to 1000)
+batch, err := client.Messages.SendBatch(ctx, &sendly.SendBatchRequest{
+    Messages: []sendly.BatchMessageItem{
+        {To: "+15551234567", Text: "Hello User 1!"},
+        {To: "+15559876543", Text: "Hello User 2!"},
+        {To: "+15551112222", Text: "Hello User 3!"},
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Batch ID: %s\n", batch.BatchID)
+fmt.Printf("Queued: %d\n", batch.Queued)
+fmt.Printf("Failed: %d\n", batch.Failed)
+fmt.Printf("Credits used: %d\n", batch.CreditsUsed)
+
+// Get batch status
+status, err := client.Messages.GetBatch(ctx, "batch_xxx")
+
+// List all batches
+batches, err := client.Messages.ListBatches(ctx, nil)
+```
+
+## Webhooks
+
+```go
+// Create a webhook endpoint
+webhook, err := client.Webhooks.Create(ctx, &sendly.CreateWebhookRequest{
+    URL:    "https://example.com/webhooks/sendly",
+    Events: []string{"message.delivered", "message.failed"},
+})
+fmt.Printf("Webhook ID: %s\n", webhook.ID)
+fmt.Printf("Secret: %s\n", webhook.Secret) // Store securely!
+
+// List all webhooks
+webhooks, err := client.Webhooks.List(ctx)
+
+// Get a specific webhook
+wh, err := client.Webhooks.Get(ctx, "whk_xxx")
+
+// Update a webhook
+client.Webhooks.Update(ctx, "whk_xxx", &sendly.UpdateWebhookRequest{
+    URL:    "https://new-endpoint.example.com/webhook",
+    Events: []string{"message.delivered", "message.failed", "message.sent"},
+})
+
+// Test a webhook
+result, err := client.Webhooks.Test(ctx, "whk_xxx")
+
+// Rotate webhook secret
+rotation, err := client.Webhooks.RotateSecret(ctx, "whk_xxx")
+
+// Delete a webhook
+err = client.Webhooks.Delete(ctx, "whk_xxx")
+```
+
+## Account & Credits
+
+```go
+// Get account information
+account, err := client.Account.Get(ctx)
+fmt.Printf("Email: %s\n", account.Email)
+
+// Check credit balance
+credits, err := client.Account.GetCredits(ctx)
+fmt.Printf("Available: %d credits\n", credits.AvailableBalance)
+fmt.Printf("Reserved: %d credits\n", credits.ReservedBalance)
+fmt.Printf("Total: %d credits\n", credits.Balance)
+
+// View credit transaction history
+transactions, err := client.Account.GetCreditTransactions(ctx)
+for _, tx := range transactions.Data {
+    fmt.Printf("%s: %d credits - %s\n", tx.Type, tx.Amount, tx.Description)
+}
+
+// List API keys
+keys, err := client.Account.ListAPIKeys(ctx)
+for _, key := range keys.Data {
+    fmt.Printf("%s: %s*** (%s)\n", key.Name, key.Prefix, key.Type)
+}
+```
+
 ## Error Handling
 
 ```go
