@@ -192,6 +192,16 @@ status, err := client.Messages.GetBatch(ctx, "batch_xxx")
 
 // List all batches
 batches, err := client.Messages.ListBatches(ctx, nil)
+
+// Preview batch (dry run) - validates without sending
+preview, err := client.Messages.PreviewBatch(ctx, &sendly.SendBatchRequest{
+    Messages: []sendly.BatchMessageItem{
+        {To: "+15551234567", Text: "Hello User 1!"},
+        {To: "+447700900123", Text: "Hello UK!"},
+    },
+})
+fmt.Printf("Total credits needed: %d\n", preview.TotalCredits)
+fmt.Printf("Valid: %d, Invalid: %d\n", preview.Valid, preview.Invalid)
 ```
 
 ## Webhooks
@@ -251,6 +261,17 @@ keys, err := client.Account.ListAPIKeys(ctx)
 for _, key := range keys.Data {
     fmt.Printf("%s: %s*** (%s)\n", key.Name, key.Prefix, key.Type)
 }
+
+// Create a new API key
+newKey, err := client.Account.CreateAPIKey(ctx, &sendly.CreateAPIKeyRequest{
+    Name:   "Production Key",
+    Type:   "live",
+    Scopes: []string{"sms:send", "sms:read"},
+})
+fmt.Printf("New key: %s\n", newKey.Key) // Only shown once!
+
+// Revoke an API key
+err = client.Account.RevokeAPIKey(ctx, "key_xxx")
 ```
 
 ## Error Handling

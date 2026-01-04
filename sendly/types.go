@@ -284,6 +284,48 @@ type ListBatchesResponse struct {
 	Count int `json:"count"`
 }
 
+// BatchPreviewItem represents a single message in a batch preview.
+type BatchPreviewItem struct {
+	// To is the recipient phone number.
+	To string `json:"to"`
+	// Text is the message content.
+	Text string `json:"text"`
+	// Segments is the number of SMS segments.
+	Segments int `json:"segments"`
+	// Credits is the credits needed for this message.
+	Credits int `json:"credits"`
+	// CanSend indicates if this message can be sent.
+	CanSend bool `json:"canSend"`
+	// BlockReason is the reason if message is blocked.
+	BlockReason *string `json:"blockReason,omitempty"`
+	// Country is the destination country code.
+	Country *string `json:"country,omitempty"`
+	// PricingTier is the pricing tier for this message.
+	PricingTier *string `json:"pricingTier,omitempty"`
+}
+
+// BatchPreviewResponse is the response from previewing a batch.
+type BatchPreviewResponse struct {
+	// CanSend indicates if the entire batch can be sent.
+	CanSend bool `json:"canSend"`
+	// TotalMessages is the total number of messages.
+	TotalMessages int `json:"totalMessages"`
+	// WillSend is the number of messages that will be sent.
+	WillSend int `json:"willSend"`
+	// Blocked is the number of messages that are blocked.
+	Blocked int `json:"blocked"`
+	// CreditsNeeded is the total credits needed.
+	CreditsNeeded int `json:"creditsNeeded"`
+	// CurrentBalance is the current credit balance.
+	CurrentBalance int `json:"currentBalance"`
+	// HasEnoughCredits indicates if there are enough credits.
+	HasEnoughCredits bool `json:"hasEnoughCredits"`
+	// Messages contains the preview for each message.
+	Messages []BatchPreviewItem `json:"messages"`
+	// BlockReasons is a count of block reasons.
+	BlockReasons map[string]int `json:"blockReasons,omitempty"`
+}
+
 // ============================================================================
 // Webhooks
 // ============================================================================

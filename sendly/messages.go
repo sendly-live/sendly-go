@@ -236,3 +236,31 @@ func (s *MessagesService) ListBatches(ctx context.Context, req *ListBatchesReque
 
 	return &resp, nil
 }
+
+// PreviewBatch previews a batch without sending (dry run).
+func (s *MessagesService) PreviewBatch(ctx context.Context, req *SendBatchRequest) (*BatchPreviewResponse, error) {
+	if req == nil {
+		return nil, &ValidationError{APIError: APIError{Message: "request is required"}}
+	}
+	if len(req.Messages) == 0 {
+		return nil, &ValidationError{APIError: APIError{Message: "messages are required"}}
+	}
+
+	// Validate each message
+	for i, msg := range req.Messages {
+		if msg.To == "" {
+			return nil, &ValidationError{APIError: APIError{Message: "to is required for message at index " + strconv.Itoa(i)}}
+		}
+		if msg.Text == "" {
+			return nil, &ValidationError{APIError: APIError{Message: "text is required for message at index " + strconv.Itoa(i)}}
+		}
+	}
+
+	var resp BatchPreviewResponse
+	err := s.client.request(ctx, "POST", "/messages/batch/preview", req, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+}

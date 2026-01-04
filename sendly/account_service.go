@@ -184,3 +184,42 @@ func (s *AccountService) GetAPIKeyUsage(ctx context.Context, keyID string) (*API
 	}
 	return &usage, nil
 }
+
+// CreateAPIKeyRequest is the request to create a new API key.
+type CreateAPIKeyRequest struct {
+	Name      string  `json:"name"`
+	ExpiresAt *string `json:"expiresAt,omitempty"`
+}
+
+// CreateAPIKeyResponse is the response from creating an API key.
+type CreateAPIKeyResponse struct {
+	APIKey APIKey `json:"apiKey"`
+	Key    string `json:"key"` // Full key value - only shown once!
+}
+
+// CreateAPIKey creates a new API key.
+func (s *AccountService) CreateAPIKey(ctx context.Context, name string) (*CreateAPIKeyResponse, error) {
+	return s.CreateAPIKeyWithOptions(ctx, CreateAPIKeyRequest{Name: name})
+}
+
+// CreateAPIKeyWithOptions creates a new API key with full options.
+func (s *AccountService) CreateAPIKeyWithOptions(ctx context.Context, req CreateAPIKeyRequest) (*CreateAPIKeyResponse, error) {
+	if req.Name == "" {
+		return nil, &ValidationError{APIError: APIError{Message: "API key name is required"}}
+	}
+
+	var resp CreateAPIKeyResponse
+	if err := s.client.request(ctx, "POST", "/account/keys", req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// RevokeAPIKey revokes an API key.
+func (s *AccountService) RevokeAPIKey(ctx context.Context, keyID string) error {
+	if keyID == "" {
+		return &ValidationError{APIError: APIError{Message: "API key ID is required"}}
+	}
+
+	return s.client.request(ctx, "DELETE", "/account/keys/"+keyID, nil, nil)
+}
